@@ -32,10 +32,10 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col items-center justify-start p-4">
 
-    <!-- 배너 템플릿 (카카오톡 오픈채팅 연결) -->
+    <!-- 배너 템플릿 (카카오톡 채널 연결) -->
     <template id="banner-template">
         <div class="promo-banner bg-white border border-blue-50 p-4 rounded-[2.2rem] mb-6 cursor-pointer shadow-lg transition-all active:scale-95 w-full max-w-sm mx-auto" 
-             onclick="window.open('https://open.kakao.com/o/sEAOhYDi', '_blank')">
+             onclick="window.open('http://pf.kakao.com/_ByPfX/chat', '_blank')">
             <div class="banner-inner flex items-center gap-4">
                 <div class="banner-icon w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-xl shadow-blue-200 shadow-lg text-white font-bold shrink-0">🔥</div>
                 <div class="flex-1 overflow-hidden min-h-[40px] flex flex-col justify-center text-left">
@@ -128,7 +128,7 @@
     </div>
 
     <script>
-        // 🎯 변경된 9개 문제 데이터
+        // 🎯 9개 문제 데이터 (비즈니스 진행상황)
         const rawData = [
             { num: "1", kr: "오늘 오후까진 준비될 거예요.", en: "It’ll be ready by this afternoon." },
             { num: "2", kr: "오늘 중으로 다 준비될 거예요.", en: "It’ll be ready by the end of the day." },
