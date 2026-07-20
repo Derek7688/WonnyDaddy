@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>⚡ [2단계] 핵심 패턴 문장 완성기 (Pro)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght=400;700;900&display=swap');
+        body { font-family: 'Pretendard', sans-serif; touch-action: manipulation; }
+        
+        /* 📢 배너 텍스트 전환 부드러운 애니메이션 효과 */
+        .banner-inner { transition: all 0.5s ease; }
+    </style>
+</head>
+<body class="bg-slate-950 min-h-screen flex flex-col items-center justify-start p-4 text-white">
+
+    <!-- 📢 공용 광고 배너 템플릿 (카카오톡 채널 채팅 연결) -->
+    <template id="banner-template">
+        <div class="promo-banner bg-white border border-blue-50 p-4 rounded-[2.2rem] mb-6 cursor-pointer shadow-lg transition-all active:scale-95 w-full max-w-sm mx-auto" 
+             onclick="window.open('http://pf.kakao.com/_ByPfX/chat', '_blank')">
+            <div class="banner-inner flex items-center gap-4">
+                <div class="banner-icon w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-xl shadow-blue-200 shadow-lg text-white font-bold shrink-0">🔥</div>
+                <div class="flex-1 overflow-hidden min-h-[40px] flex flex-col justify-center text-left">
+                    <h3 class="banner-title font-black text-slate-800 text-[12px] tracking-tight leading-tight">평일 오전, 3초 만에 툭 나오는 실전 입근육 단련 줌 라이브</h3>
+                    <p class="banner-sub text-blue-600 font-bold text-[10px] tracking-tight mt-1">복잡한 문법은 끝! 바로 말터지는 직관 영어 →</p>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <div class="w-full max-w-md my-auto">
+        
+        <!-- Intro Screen -->
+        <div id="introScreen" class="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl w-full border border-slate-800 text-center">
+            <span class="bg-indigo-950 text-indigo-300 px-4 py-1 rounded-full text-xs font-bold mb-3 inline-block uppercase tracking-widest border border-indigo-900">Step 2: Main Game</span>
+            <h1 class="text-3xl font-black text-white mb-2 tracking-tight">핵심 패턴 문장 완성기</h1>
+            <p class="text-indigo-400 font-bold text-sm italic mb-4">실전 30문장 무한 스피킹 훈련</p>
+            <p class="text-slate-400 font-medium text-sm mb-6 leading-relaxed">
+                가벼운 제안, 소감 묻기, 약속 정하기의<br>
+                핵심 3대 패턴을 완벽히 마스터하는 실전 코스입니다.<br>
+                화면의 한국어를 보고 제한 시간 내에<br>
+                <span class="text-indigo-400 font-bold">완전한 영어 문장</span>을 즉시 소리내어 뱉어보세요!
+            </p>
+            
+            <!-- 📢 인트로 화면 광고 영역 배정 -->
+            <div id="setup-banner-area"></div>
+            
+            <!-- Category Filtering Section -->
+            <div class="mb-5 px-2 text-left">
+                <label class="text-slate-300 font-bold text-sm block mb-2">🎯 훈련 구역 선택</label>
+                <div class="grid grid-cols-2 gap-2 bg-slate-950 p-2 rounded-2xl border border-slate-800">
+                    <button id="filter-all" class="py-2.5 rounded-xl font-bold text-xs transition-all bg-indigo-600 text-white" onclick="changeModeFilter('ALL')">전체 (30)</button>
+                    <button id="filter-suggest" class="py-2.5 rounded-xl font-bold text-xs transition-all text-slate-400 hover:text-white" onclick="changeModeFilter('SUGGEST')">가벼운 제안 (10)</button>
+                    <button id="filter-opinion" class="py-2.5 rounded-xl font-bold text-xs transition-all text-slate-400 hover:text-white" onclick="changeModeFilter('OPINION')">의견/소감 (10)</button>
+                    <button id="filter-appoint" class="py-2.5 rounded-xl font-bold text-xs transition-all text-slate-400 hover:text-white" onclick="changeModeFilter('APPOINT')">약속 정하기 (10)</button>
+                </div>
+            </div>
+
+            <!-- Timer / Limit Setting Section -->
+            <div class="mb-6 px-2 text-left">
+                <label class="text-slate-300 font-bold text-sm block mb-2" for="introTimeSelect">⏱️ 목표 스피킹 제한 시간 설정</label>
+                <select id="introTimeSelect" class="w-full p-4 rounded-2xl border-2 border-slate-800 font-bold text-slate-200 bg-slate-950 outline-none cursor-pointer text-base">
+                    <option value="0">⏱️ 시간 제한 없음 (개별 복습용)</option>
+                    <option value="2000">2초 (동시 통역사 레벨)</option>
+                    <option value="3000">3초 (직장인 추천 에이스)</option>
+                    <option value="4000" selected>4초 (표준 반사 속도)</option>
+                    <option value="5000">5초 (여유로운 세팅)</option>
+                </select>
+            </div>
+            
+            <button id="start-btn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-5 rounded-2xl font-bold text-lg shadow-xl transition-all active:scale-95" onclick="startMainGame(false)">선택한 30문장 훈련 시작하기 🚀</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quizScreen" class="hidden w-full">
+            <div class="flex justify-between items-center mb-4 px-2">
+                <button onclick="goToIntro()" class="p-2 hover:bg-slate-900 rounded-full transition-colors text-slate-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                </button>
+                <div class="text-slate-400 font-black text-sm tracking-widest uppercase text-center flex-1" id="progress">0 / 30</div>
+                <div class="w-10"></div>
+            </div>
+            
+            <!-- Progress Timer Bar -->
+            <div id="timerContainer" class="w-full h-[6px] bg-slate-900 rounded-full overflow-hidden mb-4">
+                <div id="timerBar" class="h-full bg-blue-500" style="width: 100%;"></div>
+            </div>
+
+            <!-- Hint Toggle Bar -->
+            <div class="flex justify-between items-center px-2 mb-4 bg-slate-900/60 p-3 rounded-2xl border border-slate-800/80">
+                <span class="text-xs text-slate-300 font-extrabold flex items-center gap-1.5">
+                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                    💡 실시간 단어 힌트
+                </span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="hintToggle" class="sr-only peer" onchange="toggleHintView()">
+                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-500 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+            </div>
+
+            <!-- Quiz Card -->
+            <div class="bg-white p-8 rounded-[3rem] shadow-2xl min-h-[280px] text-center border border-slate-200 relative overflow-hidden mb-6 select-none flex flex-col justify-between items-center">
+                <div class="w-full">
+                    <span id="cardBadge" class="bg-slate-100 text-slate-500 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-slate-200 inline-block mt-1">SWITCHING CARD</span>
+                </div>
+                
+                <!-- Korean Prompt with Highlighted Target Pattern -->
+                <div class="w-[95%] text-2xl font-bold text-slate-800 tracking-tight leading-relaxed break-keep my-4" id="korText">가져오는 중...</div>
+                
+                <!-- Dynamic Hint Box -->
+                <div id="hintBox" class="hidden w-full max-w-[90%] mb-3 px-4 py-2 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-center gap-1.5 transition-all duration-200">
+                    <span class="text-xs font-black text-indigo-400 select-none">HINT</span>
+                    <span id="hintValueText" class="text-sm font-black text-indigo-700 tracking-wide"></span>
+                </div>
+
+                <!-- Revealable English Answer -->
+                <div class="w-[90%] text-2xl font-black text-indigo-600 opacity-0 transition-opacity duration-150 break-keep h-10 flex items-center justify-center mb-1" id="engText">English...</div>
+            </div>
+
+            <!-- 📢 학습 화면 광고 영역 배정 -->
+            <div id="study-banner-area" class="mb-4"></div>
+
+            <div id="effectMsg" class="text-center font-black text-xs h-6 mb-4 text-slate-500">한국어를 보자마자 영어 완전체 문장을 소리 내어 뱉으세요!</div>
+
+            <!-- Control Buttons -->
+            <div class="mb-6 w-full" id="defaultBtnGroup">
+                <button class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-all" onclick="showAnswer()">정답 확인 ⚡</button>
+            </div>
+
+            <div class="hidden grid grid-cols-2 gap-4 mb-6 w-full" id="judgeBtnGroup">
+                <button class="bg-gradient-to-b from-rose-500 to-rose-600 text-white py-5 rounded-2xl font-bold text-base active:scale-95 transition-all shadow-lg flex items-center justify-center gap-1" onclick="submitResult(false)">
+                    <span>❌</span> <span>틀렸음 / 초과</span>
+                </button>
+                <button class="bg-gradient-to-b from-emerald-500 to-emerald-600 text-white py-5 rounded-2xl font-bold text-base active:scale-95 transition-all shadow-lg flex items-center justify-center gap-1" onclick="submitResult(true)">
+                    <span>⭕</span> <span>시간 내 성공</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Scoreboard Screen -->
+        <div id="resultScreen" class="hidden bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl w-full border border-slate-700 text-left">
+            <div class="text-2xl font-black text-center mb-1 text-white">🎉 훈련 종료 성적표</div>
+            <div id="scoreRatioSummary" class="font-bold text-slate-400 mb-1 text-center text-sm">성공률: 0 / 30 (0%)</div>
+            <div id="totalTimeSummary" class="font-black text-blue-400 mb-6 text-center text-base tracking-tight">⏱️ 총 소요 시간: 0초</div>
+            
+            <!-- Result List Container -->
+            <div class="max-h-[220px] overflow-y-auto mb-6 pr-1 space-y-3" id="resultList"></div>
+            
+            <!-- 📢 성적표 완료 화면 광고 영역 배정 -->
+            <div id="finish-banner-area" class="w-full mb-4"></div>
+
+            <div class="flex flex-col gap-2 w-full">
+                <button id="review-failed-btn" class="hidden w-full bg-orange-500 text-white py-4 rounded-2xl font-bold text-lg shadow-xl transition-all active:scale-95" onclick="startMainGame(true)">❌ 틀린 문제만 다시 도전하기 🔄</button>
+                <button class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl transition-all active:scale-95" onclick="goToIntro()">처음으로 가기 🔄</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Core dataset mapped to the exact 30 expressions with curated target hints
+        const mainDataset = [
+            // [1부] 가벼운 제안하기 (SUGGEST) - 10문장
+            { type: "SUGGEST", categoryLabel: "가벼운 제안", kor: "{커피 한 잔 하는 거} 어때?", eng: "How about grabbing a coffee?", hint: "grab a coffee" },
+            { type: "SUGGEST", categoryLabel: "가벼운 제안", kor: "{같이 점심 먹는 거} 어때?", eng: "How about having lunch together?", hint: "have lunch together" },
+            { type: "SUGGEST", categoryLabel: "가벼운 제안", kor: "{잠깐 쉬는 게} 어때?", eng: "How about taking a break?", hint: "take a break" },
+            { type: "SUGGEST", categoryLabel: "가벼운 제안", kor: "{배달 시켜 먹는 거} 어때?", eng: "How about ordering in?", hint: "order in" },
+            { type: "SUGGEST", categoryLabel: "가벼운 제안", kor: "{외식하는 거} 어때?", eng: "How about eating out?", hint: "eat out" },
+            { type: "SUGGEST", categoryLabel: "가벼운 제안", kor: "{산책하러 가는 거} 어때?", eng: "How about going for a walk?", hint: "go for a walk" },
+            { type: "SUGGEST", categoryLabel: "가벼운 제안", kor: "{영화 보러 가는 거} 어때?", eng: "How about watching a movie?", hint: "watch a movie" },
+            { type: "SUGGEST", categoryLabel: "가벼운 제안", kor: "{택시 타는 거} 어때?", eng: "How about taking a taxi?", hint: "take a taxi" },
+            { type: "SUGGEST", categoryLabel: "가벼운 제안", kor: "{집에서 요리하는 거} 어때?", eng: "How about cooking at home?", hint: "cook at home" },
+            { type: "SUGGEST", categoryLabel: "가벼운 제안", kor: "{같이 쇼핑 가는 거} 어때?", eng: "How about going shopping together?", hint: "go shopping together" },
+
+            // [2부] 의견이나 소감 물어보기 (OPINION) - 10문장
+            { type: "OPINION", categoryLabel: "의견 / 소감", kor: "{새로 구한 일}은 어때?", eng: "How do you like your new job?", hint: "your new job" },
+            { type: "OPINION", categoryLabel: "의견 / 소감", kor: "{음식 맛}은 마음에 들어?", eng: "How do you like the food?", hint: "the food" },
+            { type: "OPINION", categoryLabel: "의견 / 소감", kor: "{내 새 머리 스타일} 어때?", eng: "How do you like my new hairstyle?", hint: "my new hairstyle" },
+            { type: "OPINION", categoryLabel: "의견 / 소감", kor: "{결혼생활}은 해보니 어때?", eng: "How do you like being married?", hint: "be married" },
+            { type: "OPINION", categoryLabel: "의견 / 소감", kor: "{아이를 키워보니} 어때?", eng: "How do you like having a kid?", hint: "have a kid" },
+            { type: "OPINION", categoryLabel: "의견 / 소감", kor: "{여기 날씨}는 어때?", eng: "How do you like the weather here?", hint: "the weather here" },
+            { type: "OPINION", categoryLabel: "의견 / 소감", kor: "{새 아파트}는 마음에 들어?", eng: "How do you like your new apartment?", hint: "your new apartment" },
+            { type: "OPINION", categoryLabel: "의견 / 소감", kor: "{이 도시}는 어때?", eng: "How do you like this city?", hint: "this city" },
+            { type: "OPINION", categoryLabel: "의견 / 소감", kor: "{커피 맛}은 어때?", eng: "How do you like the coffee?", hint: "the coffee" },
+            { type: "OPINION", categoryLabel: "의견 / 소감", kor: "{여기서 일하는 건} 어때?", eng: "How do you like working here?", hint: "work here" },
+
+            // [3부] 약속 장소와 시간 정하기 (APPOINT) - 10문장
+            { type: "APPOINT", categoryLabel: "약속 정하기", kor: "{강남역} 어때?", eng: "How does Gangnam Station sound?", hint: "Gangnam Station" },
+            { type: "APPOINT", categoryLabel: "약속 정하기", kor: "{이번 주 금요일} 어때?", eng: "How does this Friday sound?", hint: "this Friday" },
+            { type: "APPOINT", categoryLabel: "약속 정하기", kor: "{저녁 7시} 어때?", eng: "How does 7 PM sound?", hint: "7 PM" },
+            { type: "APPOINT", categoryLabel: "약속 정하기", kor: "{다음 주말} 어때?", eng: "How does next weekend sound?", hint: "next weekend" },
+            { type: "APPOINT", categoryLabel: "약속 정하기", kor: "{우리 집 근처} 어때?", eng: "How does near my house sound?", hint: "near my house" },
+            { type: "APPOINT", categoryLabel: "약속 정하기", kor: "{내일 아침} 어때?", eng: "How does tomorrow morning sound?", hint: "tomorrow morning" },
+            { type: "APPOINT", categoryLabel: "약속 정하기", kor: "{공원에서 만나는 거} 어때?", eng: "How does meeting at the park sound?", hint: "meeting at the park" },
+            { type: "APPOINT", categoryLabel: "약속 정하기", kor: "{다음 주 월요일} 어때?", eng: "How does next Monday sound?", hint: "next Monday" },
+            { type: "APPOINT", categoryLabel: "약속 정하기", kor: "{피크닉 가는 거} 어때?", eng: "How does going on a picnic sound?", hint: "going on a picnic" },
+            { type: "APPOINT", categoryLabel: "약속 정하기", kor: "{이탈리안 음식} 어때?", eng: "How does Italian food sound?", hint: "Italian food" }
+        ];
+
+        let quizPool = [];
+        let currentIndex = 0;
+        let score = 0;
+        let timeLimit = 4000;
+        let timerInterval = null;
+        let startTime = 0;
+        let gameStartTime = 0;
+        let results = [];
+        let isTimedOut = false;
+        let currentFilterMode = "ALL"; // ALL, SUGGEST, OPINION, APPOINT
+        let isHintEnabled = false;
+
+        // 📢 배너 2개 문구 롤링 정보
+        const bannerMsgs = [
+            { 
+                icon: "🔥", 
+                title: "평일 오전, 3초 만에 툭 나오는 실전 입근육 단련 줌 라이브", 
+                sub: "복잡한 문법은 끝! 바로 말터지는 직관 영어 →" 
+            },
+            { 
+                icon: "☕", 
+                title: "알찬 오전을 만드는 주 2회 줌 라이브 수강신청", 
+                sub: "머리로 생각하기 전에 입으로 먼저 반응하는 연습 →" 
+            }
+        ];
+        let currentBannerIdx = 0;
+
+        function changeModeFilter(mode) {
+            currentFilterMode = mode;
+            const buttons = {
+                "ALL": document.getElementById('filter-all'),
+                "SUGGEST": document.getElementById('filter-suggest'),
+                "OPINION": document.getElementById('filter-opinion'),
+                "APPOINT": document.getElementById('filter-appoint')
+            };
+            
+            Object.keys(buttons).forEach(key => {
+                if (key === mode) {
+                    buttons[key].className = "py-2.5 rounded-xl font-bold text-xs transition-all bg-indigo-600 text-white";
+                } else {
+                    buttons[key].className = "py-2.5 rounded-xl font-bold text-xs transition-all text-slate-400 hover:text-white hover:bg-slate-800/30";
+                }
+            });
+
+            let count = 30;
+            if (mode !== "ALL") {
+                count = 10;
+            }
+            document.getElementById('start-btn').innerText = `선택한 ${count}문장 훈련 시작하기 🚀`;
+        }
+
+        function toggleHintView() {
+            const hintCheckbox = document.getElementById('hintToggle');
+            isHintEnabled = hintCheckbox.checked;
+            updateHintDisplay();
+        }
+
+        function updateHintDisplay() {
+            const hintBox = document.getElementById('hintBox');
+            if (isHintEnabled && quizPool[currentIndex]) {
+                document.getElementById('hintValueText').innerText = quizPool[currentIndex].hint;
+                hintBox.classList.remove('hidden');
+            } else {
+                hintBox.classList.add('hidden');
+            }
+        }
+
+        function startMainGame(isReviewMode) {
+            const introSelect = document.getElementById('introTimeSelect');
+            timeLimit = parseInt(introSelect.value);
+
+            document.getElementById('introScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+
+            if (timeLimit === 0) {
+                document.getElementById('timerContainer').classList.add('hidden');
+            } else {
+                document.getElementById('timerContainer').classList.remove('hidden');
+            }
+
+            currentIndex = 0;
+            score = 0;
+
+            if (isReviewMode) {
+                quizPool = results.filter(r => !r.success).map(r => ({
+                    kor: r.rawKor,
+                    eng: r.eng,
+                    type: r.type,
+                    categoryLabel: r.categoryLabel,
+                    hint: r.hint
+                }));
+            } else {
+                if (currentFilterMode === "ALL") {
+                    quizPool = [...mainDataset];
+                } else {
+                    quizPool = mainDataset.filter(item => item.type === currentFilterMode);
+                }
+            }
+
+            results = [];
+            quizPool.sort(() => Math.random() - 0.5);
+            gameStartTime = Date.now();
+
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentIndex >= quizPool.length) {
+                finishGame();
+                return;
+            }
+
+            isTimedOut = false;
+            document.getElementById('progress').innerText = `${currentIndex + 1} / ${quizPool.length}`;
+            
+            const currentItem = quizPool[currentIndex];
+            let rawKor = currentItem.kor;
+            let formattedKor = rawKor.replace("{", "<span class='text-indigo-600 font-black text-3xl mx-0.5 border-b-2 border-indigo-200/60'>").replace("}", "</span>");
+            
+            // Render card context, category badge, and active hint state
+            document.getElementById('korText').innerHTML = formattedKor;
+            document.getElementById('engText').innerText = currentItem.eng;
+            document.getElementById('engText').classList.add('opacity-0');
+            document.getElementById('cardBadge').innerText = currentItem.categoryLabel;
+            
+            updateHintDisplay();
+            
+            if (timeLimit === 0) {
+                document.getElementById('effectMsg').innerText = "♾️ 시간 제한이 없습니다. 완벽하게 뱉은 후 정답을 확인하세요.";
+                document.getElementById('effectMsg').className = "text-center font-black text-xs h-6 mb-4 text-slate-400";
+            } else {
+                document.getElementById('effectMsg').innerText = "⏰ 타이머가 다 줄어들기 전에 영어로 발사하세요!";
+                document.getElementById('effectMsg').className = "text-center font-black text-xs h-6 mb-4 text-slate-400";
+                startTimer();
+            }
+
+            document.getElementById('defaultBtnGroup').classList.remove('hidden');
+            document.getElementById('judgeBtnGroup').classList.add('hidden');
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            const timerBar = document.getElementById('timerBar');
+            timerBar.className = "h-full bg-blue-500 transition-none";
+            timerBar.style.width = "100%";
+
+            startTime = Date.now();
+            
+            timerInterval = setInterval(() => {
+                if (timeLimit === 0) return;
+                const elapsedTime = Date.now() - startTime;
+                const remainingRatio = Math.max(0, (timeLimit - elapsedTime) / timeLimit) * 100;
+                
+                timerBar.style.width = `${remainingRatio}%`;
+
+                if (remainingRatio < 30) {
+                    timerBar.className = "h-full bg-rose-500";
+                } else if (remainingRatio < 60) {
+                    timerBar.className = "h-full bg-amber-500";
+                }
+
+                if (elapsedTime >= timeLimit) {
+                    clearInterval(timerInterval);
+                    timerBar.style.width = "0%";
+                    isTimedOut = true;
+                    document.getElementById('effectMsg').innerText = "⏰ 시간 초과! 정답을 확인하고 실패 버튼을 누르세요.";
+                    document.getElementById('effectMsg').className = "text-center font-black text-xs h-6 mb-4 text-rose-500 animate-pulse";
+                }
+            }, 25);
+        }
+
+        function showAnswer() {
+            clearInterval(timerInterval);
+            document.getElementById('engText').classList.remove('opacity-0');
+            
+            document.getElementById('defaultBtnGroup').classList.add('hidden');
+            document.getElementById('judgeBtnGroup').classList.remove('hidden');
+        }
+
+        function submitResult(isSuccess) {
+            const currentItem = quizPool[currentIndex];
+            const finalSuccess = (isSuccess && !isTimedOut);
+            
+            if (finalSuccess) {
+                score++;
+            }
+
+            results.push({
+                type: currentItem.type,
+                categoryLabel: currentItem.categoryLabel,
+                rawKor: currentItem.kor,
+                kor: currentItem.kor.replace("{","").replace("}",""),
+                eng: currentItem.eng,
+                hint: currentItem.hint,
+                success: finalSuccess 
+            });
+
+            currentIndex++;
+            showQuestion();
+        }
+
+        function finishGame() {
+            clearInterval(timerInterval);
+            
+            const totalElapsedTimeMs = Date.now() - gameStartTime;
+            const totalSeconds = Math.floor(totalElapsedTimeMs / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            const timeString = minutes > 0 ? `⏱️ 총 소요 시간: ${minutes}분 ${seconds}초` : `⏱️ 총 소요 시간: ${seconds}초`;
+            document.getElementById('totalTimeSummary').innerText = timeString;
+
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+
+            const ratio = Math.round((score / quizPool.length) * 100);
+            document.getElementById('scoreRatioSummary').innerText = `성공률: ${score} / ${quizPool.length} (${ratio}%)`;
+
+            let failedAnswers = results.filter(r => !r.success);
+            const reviewBtn = document.getElementById('review-failed-btn');
+            
+            if (failedAnswers.length > 0) {
+                reviewBtn.classList.remove('hidden');
+                reviewBtn.innerText = `❌ 틀린 문제 ${failedAnswers.length}개만 다시 도전하기 🔄`;
+            } else {
+                reviewBtn.classList.add('hidden');
+            }
+
+            const resultList = document.getElementById('resultList');
+            resultList.innerHTML = '';
+
+            results.forEach(res => {
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-2xl border ${res.success ? 'bg-emerald-950/40 border-emerald-800' : 'bg-rose-950/40 border-rose-800'} text-sm flex flex-col gap-0.5`;
+                
+                item.innerHTML = `
+                    <div class="flex items-center gap-1.5 font-bold">
+                        <span>${res.success ? '⭕' : '❌'}</span>
+                        <span class="text-[10px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">${res.categoryLabel}</span>
+                        <span class="${res.success ? 'text-emerald-400' : 'text-rose-400'}">${res.kor}</span>
+                    </div>
+                    <div class="text-slate-400 text-xs pl-6 italic font-medium">${res.eng}</div>
+                `;
+                resultList.appendChild(item);
+            });
+        }
+
+        function goToIntro() {
+            clearInterval(timerInterval);
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('introScreen').classList.remove('hidden');
+        }
+
+        // 📢 광고 배너 주입 함수
+        function injectBanners() {
+            const template = document.getElementById('banner-template').content;
+            ['setup-banner-area', 'study-banner-area', 'finish-banner-area'].forEach(id => {
+                const area = document.getElementById(id);
+                if (area) {
+                    area.innerHTML = ''; // 중복 주입 방지
+                    area.appendChild(template.cloneNode(true));
+                }
+            });
+        }
+
+        // 📢 배너 롤링(4초 주기) 제어 함수
+        function rotateBanners() {
+            currentBannerIdx = (currentBannerIdx + 1) % bannerMsgs.length;
+            const msg = bannerMsgs[currentBannerIdx];
+            document.querySelectorAll('.promo-banner').forEach(banner => {
+                const inner = banner.querySelector('.banner-inner');
+                if (!inner) return;
+                
+                // 트랜지션 애니메이션 적용
+                inner.style.opacity = 0;
+                inner.style.transform = "translateY(3px)";
+                setTimeout(() => {
+                    banner.querySelector('.banner-icon').innerText = msg.icon;
+                    banner.querySelector('.banner-title').innerText = msg.title;
+                    banner.querySelector('.banner-sub').innerText = msg.sub;
+                    inner.style.opacity = 1;
+                    inner.style.transform = "translateY(0)";
+                }, 500);
+            });
+        }
+
+        // Window Onload 초기화
+        window.onload = function() {
+            injectBanners();
+            setInterval(rotateBanners, 4000);
+        };
+    </script>
+</body>
+</html>
