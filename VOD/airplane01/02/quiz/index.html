@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>기내 반입 및 보안 검색 랜덤 훈련기 (Can I take this?)</title>
+    
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --primary-navy: #0f172a;
+            --airline-blue: #0284c7;
+            --airline-sky: #e0f2fe;
+            --accent-cyan: #06b6d4;
+            --bg-sky: #f0f9ff;
+        }
+
+        body { 
+            font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif; 
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
+            min-height: 100vh; background-color: var(--bg-sky); margin: 0; padding: 40px 0; color: #1e293b; -webkit-font-smoothing: antialiased;
+        }
+
+        .card { 
+            background: white; padding: 32px 26px; border-radius: 28px; 
+            box-shadow: 0 20px 40px -15px rgba(2, 132, 199, 0.12), 0 0 1px 1px rgba(224, 242, 254, 0.8); 
+            text-align: center; width: 95%; max-width: 480px; border: 1px solid #e2e8f0; position: relative; 
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .top-controls {
+            display: flex; width: 100%; justify-content: flex-end; align-items: center; margin-bottom: 20px;
+        }
+
+        h1 { 
+            color: var(--primary-navy); font-size: 23px !important; margin: 8px 0 20px 0; 
+            font-weight: 900; letter-spacing: -0.04em; line-height: 1.25;
+        }
+
+        .auto-toggle {
+            display: flex; align-items: center; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 12px; border: 1px solid #e2e8f0;
+        }
+        .toggle-btn {
+            padding: 4px 10px; font-size: 11px; border-radius: 8px; cursor: pointer; font-weight: 800; border: none; color: #64748b; transition: all 0.2s;
+        }
+        .toggle-btn.active { background: var(--airline-blue); color: white; }
+
+        #korean-task { 
+            font-size: 19px; font-weight: 700; margin: 20px 0; min-height: 80px; 
+            color: #1e293b; line-height: 1.55; word-break: keep-all; display: flex; align-items: center; justify-content: center; letter-spacing: -0.02em;
+        }
+
+        #english-answer { 
+            font-size: 16px; color: #0369a1; margin-bottom: 25px; min-height: 80px; 
+            display: flex; align-items: center; justify-content: center; padding: 18px; 
+            background: #f0f9ff; border-radius: 16px; border: 1px solid #bae6fd; font-weight: 700; line-height: 1.5;
+            visibility: hidden; opacity: 0; transition: opacity 0.3s ease; word-break: keep-all;
+        }
+        #english-answer.show { visibility: visible; opacity: 1; }
+
+        .main-controls { display: flex; justify-content: center; gap: 10px; width: 100%; }
+        .ans-btn, .next-btn, .start-btn { 
+            flex: 1; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; border: none; font-size: 15px; transition: transform 0.1s, background-color 0.2s;
+        }
+        .start-btn { background: var(--airline-blue); color: white; width: 100%; font-size: 17px; padding: 18px; box-shadow: 0 10px 20px -5px rgba(2, 132, 199, 0.4); }
+        .ans-btn { background: var(--primary-navy); color: white; }
+        .next-btn { background: var(--airline-blue); color: white; }
+        .ans-btn:active, .next-btn:active, .start-btn:active { transform: scale(0.97); }
+
+        .back-btn { 
+            background: transparent; color: #94a3b8; padding: 12px; border-radius: 14px; 
+            font-weight: 600; cursor: pointer; border: 1px dashed #cbd5e1; font-size: 13px; margin-top: 14px; width: 100%; 
+            transition: all 0.2s;
+        }
+
+        .hidden { display: none !important; }
+
+        #auto-progress {
+            width: 0%; height: 4px; background: var(--accent-cyan); position: absolute; top: 0; left: 0; border-radius: 28px 28px 0 0; transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div id="auto-progress"></div>
+    
+    <div id="top-controls" class="top-controls hidden">
+        <div class="auto-toggle">
+            <button id="mode-manual" class="toggle-btn active" onclick="setPlayMode('manual')">수동</button>
+            <button id="mode-auto" class="toggle-btn" onclick="setPlayMode('auto')">자동</button>
+        </div>
+    </div>
+
+    <h1>🧳 기내 반입 및 보안 검색 트레이너</h1>
+
+    <div id="korean-task">버튼을 눌러 실전 훈련을 시작하세요!</div>
+
+    <div id="start-area" class="w-full my-4">
+        <button class="start-btn" onclick="startTrainer()">훈련 시작하기 🧳</button>
+    </div>
+
+    <div id="english-answer" class="hidden"></div>
+    
+    <div id="action-area" class="control-group w-full hidden">
+        <div class="main-controls">
+            <button id="manual-ans-btn" class="ans-btn" onclick="showAnswer()">정답 확인 👀</button>
+            <button id="manual-next-btn" class="next-btn" onclick="generate()">다음 질문 🎲</button>
+        </div>
+        <button class="back-btn" onclick="goBack()">이전 문장으로 되돌리기 ↩️</button>
+    </div>
+
+    <div id="banner-container" class="promo-banner bg-white border border-blue-50 p-3.5 rounded-[1.5rem] mt-6 cursor-pointer shadow-lg transition-all active:scale-95 w-full max-w-sm mx-auto" onclick="handleBannerClick()">
+        <div id="banner-content" class="flex items-center gap-3 text-left">
+            <div id="banner-icon" class="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-xl text-white font-bold shrink-0">⚡</div>
+            <div class="flex-1">
+                <h3 id="banner-title" class="font-black text-slate-800 text-[12px] tracking-tight leading-tight">입에서 3초 만에 툭! 실전 회화 치트키</h3>
+                <p id="banner-sub" class="text-blue-600 font-bold text-[10px] tracking-tight mt-1">워니아빠 인스타에서 하루 1분 꿀팁 모아보기 →</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 🎯 기내 반입 및 보안 검색 실전 데이터베이스 (15문항)
+    const questions = [
+        // 📌 [기초 5문항]
+        { kr: "이거 보안 검색대에 통과시켜도 되나요?", en: "Can I take this through security?" },
+        { kr: "이거 비행기에 가지고 타도 되나요?", en: "Can I take this on the plane?" },
+        { kr: "이거 제가 들고 타도 되나요?", en: "Can I take this with me?" },
+        { kr: "이거 기내 수화물로 가져가도 되나요?", en: "Can I take this as a carry-on?" },
+        { kr: "이거 추가 요금 없이 갖고 타도 되나요?", en: "Can I take this without an extra fee?" },
+
+        // 🚀 [실전 응용 10문항]
+        { kr: "이거 기내에 들고 타도 되나요?", en: "Can I take this on board?" },
+        { kr: "이거 개인 소지품으로 가져가도 되나요?", en: "Can I take this as a personal item?" },
+        { kr: "이거 무료로 들고 탈 수 있나요?", en: "Can I take this for free?" },
+        { kr: "이거 발밑에 두고 타도 되나요?", en: "Can I take this under the seat?" },
+        { kr: "이거 머리 위 선반에 넣고 타도 되나요?", en: "Can I take this in the overhead bin?" },
+        { kr: "이거 보조 가방(두 번째 가방)으로 같이 들고 타도 되나요?", en: "Can I take this as a second bag?" },
+        { kr: "이 음료 보안 검색대에 들고 가도 되나요?", en: "Can I take this drink through security?" },
+        { kr: "이 가방 기내 수화물로 가져가도 되나요?", en: "Can I take this bag as a carry-on?" },
+        { kr: "이 면세점 쇼핑백 기내에 들고 타도 되나요?", en: "Can I take this duty-free bag on board?" },
+        { kr: "이 백팩 개인 소지품으로 들고 타도 되나요?", en: "Can I take this backpack as a personal item?" }
+    ];
+
+    let playMode = 'manual';
+    let currentTask = { kr: '', en: '' };
+    let history = [];
+    let autoTimer1 = null;
+    let autoTimer2 = null;
+    let questionDeck = [];
+
+    function shuffleDeck() {
+        questionDeck = [...questions].sort(() => Math.random() - 0.5);
+    }
+
+    function clearAllTimers() {
+        if (autoTimer1) clearTimeout(autoTimer1);
+        if (autoTimer2) clearTimeout(autoTimer2);
+        autoTimer1 = null;
+        autoTimer2 = null;
+    }
+
+    function startTrainer() {
+        document.getElementById('start-area').classList.add('hidden');
+        document.getElementById('top-controls').classList.remove('hidden');
+        document.getElementById('action-area').classList.remove('hidden');
+        document.getElementById('english-answer').classList.remove('hidden');
+        shuffleDeck();
+        generate();
+    }
+
+    function setPlayMode(mode) {
+        clearAllTimers();
+        updateProgressBar(0, 0);
+        playMode = mode;
+        document.getElementById('mode-manual').className = `toggle-btn ${mode === 'manual' ? 'active' : ''}`;
+        document.getElementById('mode-auto').className = `toggle-btn ${mode === 'auto' ? 'active' : ''}`;
+        const isAuto = (mode === 'auto');
+        document.getElementById('manual-ans-btn').disabled = isAuto;
+        document.getElementById('manual-next-btn').disabled = isAuto;
+        document.getElementById('manual-ans-btn').style.opacity = isAuto ? "0.5" : "1";
+        document.getElementById('manual-next-btn').style.opacity = isAuto ? "0.5" : "1";
+
+        if (isAuto) {
+            runAutoCycle();
+        }
+    }
+
+    function generate() {
+        clearAllTimers();
+        
+        if (currentTask.kr) {
+            history.push({...currentTask});
+        }
+        if (history.length > 20) history.shift();
+
+        if (questionDeck.length === 0) {
+            shuffleDeck();
+            if (questionDeck[0].en === currentTask.en && questionDeck.length > 1) {
+                const temp = questionDeck.shift();
+                questionDeck.push(temp);
+            }
+        }
+
+        const nextItem = questionDeck.shift();
+        currentTask = { kr: nextItem.kr, en: nextItem.en };
+        
+        updateDisplay();
+
+        if (playMode === 'auto') {
+            runAutoCycle();
+        }
+    }
+
+    function runAutoCycle() {
+        clearAllTimers();
+        updateProgressBar(100, 4500);
+        
+        autoTimer1 = setTimeout(() => {
+            showAnswer();
+            updateProgressBar(100, 3000);
+            
+            autoTimer2 = setTimeout(() => {
+                generate();
+            }, 3000);
+        }, 4500);
+    }
+
+    function updateProgressBar(width, duration) {
+        const bar = document.getElementById('auto-progress');
+        bar.style.transition = 'none'; 
+        bar.style.width = '0%';
+        if (duration > 0) {
+            setTimeout(() => {
+                bar.style.transition = `width ${duration}ms linear`;
+                bar.style.width = `${width}%`;
+            }, 20);
+        }
+    }
+
+    function updateDisplay() {
+        document.getElementById('korean-task').innerText = currentTask.kr;
+        const ans = document.getElementById('english-answer');
+        ans.classList.remove('show');
+        ans.innerText = currentTask.en;
+    }
+
+    function showAnswer() { 
+        document.getElementById('english-answer').classList.add('show'); 
+    }
+
+    function goBack() {
+        if (history.length === 0) return;
+        if (playMode === 'auto') setPlayMode('manual');
+        clearAllTimers();
+        currentTask = history.pop();
+        updateDisplay();
+    }
+
+    const bannerMsgs = [
+        { 
+            icon: "⚡", 
+            title: "입에서 3초 만에 툭! 실전 회화 치트키", 
+            sub: "워니아빠 인스타에서 하루 1분 꿀팁 모아보기 →",
+            url: "https://www.instagram.com/wonnydaddy_english/"
+        },
+        { 
+            icon: "🎬", 
+            title: "교과서엔 없는 100% 찐 미국식 뉘앙스", 
+            sub: "워니아빠 유튜브에서 상황별 실전 영상 보기 →",
+            url: "https://www.youtube.com/@%EC%9B%8C%EB%8B%88%EC%95%84%EB%B9%A0_Official"
+        }
+    ];
+
+    let currentBannerIdx = 0;
+
+    function handleBannerClick() {
+        const currentItem = bannerMsgs[currentBannerIdx];
+        if (currentItem && currentItem.url) {
+            window.open(currentItem.url, '_blank');
+        }
+    }
+
+    setInterval(() => {
+        currentBannerIdx = (currentBannerIdx + 1) % bannerMsgs.length;
+        const msg = bannerMsgs[currentBannerIdx];
+        document.getElementById('banner-icon').innerText = msg.icon;
+        document.getElementById('banner-title').innerText = msg.title;
+        document.getElementById('banner-sub').innerText = msg.sub;
+    }, 4000);
+</script>
+
+</body>
+</html>
